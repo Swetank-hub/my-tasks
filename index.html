@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Master Task & Execution Dashboard</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #151e2e;
+      --border: #243247;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --col-bg: #0f172a;
+      --toolbar-bg: #111827;
+      --banner-bg: rgba(37, 99, 235, 0.12);
+      --banner-border: rgba(59, 130, 246, 0.35);
+      --table-header: #1e293b;
+      --table-row-alt: #101726;
+      --table-row-hover: #1c273c;
+      --comment-bg: rgba(15, 23, 42, 0.7);
+      --poa-bg: rgba(14, 165, 233, 0.1);
+      --poa-border: #0284c7;
+      --modal-bg: #1e293b;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.35);
+      --progress-bg: #1e293b;
+    }
+
+    body.light-theme {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --col-bg: #f1f5f9;
+      --toolbar-bg: #ffffff;
+      --banner-bg: #eff6ff;
+      --banner-border: #bfdbfe;
+      --table-header: #f1f5f9;
+      --table-row-alt: #f8fafc;
+      --table-row-hover: #f1f5f9;
+      --comment-bg: #f8fafc;
+      --poa-bg: #f0f9ff;
+      --poa-border: #0ea5e9;
+      --modal-bg: #ffffff;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06);
+      --progress-bg: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      line-height: 1.5;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .storage-banner {
+      background: var(--banner-bg);
+      border: 1px solid var(--banner-border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .storage-indicator { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    h1 { font-size: 24px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .header-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    button:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    button.btn-green { background: #059669; }
+    button.btn-green:hover { background: #047857; }
+    button.secondary { background: var(--card-bg); border: 1px solid var(--border); color: var(--text); }
+    button.secondary:hover { background: var(--border); }
+    button.theme-toggle { background: var(--card-bg); border: 1px solid var(--border); color: var(--text); font-weight: 700; }
+
+    .toolbar-container {
+      background: var(--toolbar-bg);
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: var(--shadow);
+    }
+    .toolbar-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .view-pills {
+      display: flex;
+      background: var(--col-bg);
+      padding: 3px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .view-btn {
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .view-btn.active { background: var(--primary); color: #fff; }
+    .view-btn:hover:not(.active) { color: var(--text); }
+
+    .filter-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      width: 100%;
+      align-items: center;
+    }
+    input, select, textarea {
+      padding: 8px 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
+
+    .toggle-completed-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+      margin-left: auto;
+    }
+
+    .board-kanban {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+    .col {
+      background: var(--col-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      min-height: 520px;
+    }
+    .col-header {
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .badge-count {
+      background: var(--card-bg);
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .col-add-btn {
+      width: 100%;
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px dashed var(--border);
+      color: var(--text-muted);
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .col-add-btn:hover { background: var(--card-bg); color: var(--text); border-color: var(--primary); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .card:hover { transform: translateY(-2px); border-color: var(--primary); }
+    .card.is-completed { opacity: 0.75; border-color: rgba(16, 185, 129, 0.3); }
+    .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .card-id { font-size: 11px; font-weight: 700; color: var(--text-muted); }
+    .card-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; line-height: 1.4; }
+    
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+    .badge-cat { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+    .badge-owner { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .badge-prio-high { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-prio-med { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-prio-low { background: rgba(148, 163, 184, 0.15); color: #94a3b8; }
+    .badge-eta { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); }
+    .badge-overdue { background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid #ef4444; font-weight: 700; }
+    .badge-trip { background: rgba(245, 158, 11, 0.2); color: #d97706; }
+    .badge-status { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+
+    .poa-box {
+      font-size: 12px;
+      color: #0284c7;
+      background: var(--poa-bg);
+      padding: 8px 10px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--poa-border);
+    }
+    body.light-theme .poa-box { color: #0369a1; }
+    .poa-title { font-weight: 700; font-size: 11px; text-transform: uppercase; margin-bottom: 2px; }
+    
+    .card-comment {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--comment-bg);
+      padding: 8px 10px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      border-left: 3px solid var(--border);
+      word-break: break-word;
+    }
+    .card-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+    .card-actions select { flex: 1; padding: 5px 8px; font-size: 11px; cursor: pointer; }
+    .btn-edit { background: var(--border); color: var(--text); padding: 5px 10px; font-size: 11px; border-radius: 4px; }
+    .btn-edit:hover { background: var(--text-muted); color: #fff; }
+    .btn-del {
+      background: transparent;
+      color: #ef4444;
+      padding: 5px 8px;
+      font-size: 11px;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 4px;
+    }
+    .btn-del:hover { background: rgba(239, 68, 68, 0.15); }
+
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th {
+      background: var(--table-header);
+      padding: 12px 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+    tr.is-row-completed td { opacity: 0.7; }
+    tr:nth-child(even) td { background: var(--table-row-alt); }
+    tr:hover td { background: var(--table-row-hover); }
+
+    .group-section {
+      background: var(--col-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .group-header {
+      background: var(--table-header);
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .reports-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .stat-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); }
+    .stat-num { font-size: 32px; font-weight: 800; color: var(--text); line-height: 1; }
+    .stat-sub { font-size: 12px; color: var(--text-muted); }
+
+    .chart-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .chart-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; color: var(--text); display: flex; justify-content: space-between; }
+    .bar-row { display: flex; align-items: center; margin-bottom: 10px; gap: 12px; font-size: 13px; }
+    .bar-label { width: 140px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { flex: 1; height: 18px; background: var(--progress-bg); border-radius: 10px; overflow: hidden; display: flex; }
+    .bar-fill { height: 100%; border-radius: 10px; transition: width 0.3s; }
+    .bar-val { width: 70px; text-align: right; font-weight: 700; font-size: 12px; color: var(--text-muted); }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(2px);
+    }
+    .modal {
+      background: var(--modal-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      width: 100%;
+      max-width: 540px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .modal h2 { font-size: 18px; margin-bottom: 18px; color: var(--text); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .modal-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    #fileInput { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="storage-banner">
+    <div class="storage-indicator">
+      <div class="dot"></div>
+      <span><strong>Master Database Active:</strong> Complete tracker (all 152 records including Completed items) auto-saved locally.</span>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="secondary" onclick="exportJSON()" style="padding: 5px 12px; font-size: 12px;">Download Backup (.json)</button>
+      <button class="secondary" onclick="triggerImport()" style="padding: 5px 12px; font-size: 12px;">Restore Backup</button>
+      <input type="file" id="fileInput" accept=".json" onchange="importJSON(event)">
+    </div>
+  </div>
+
+  <header>
+    <div>
+      <h1>Master Task & Execution Dashboard</h1>
+      <span style="font-size: 13px; color: var(--text-muted);">Tasks, Deadlines, Plan of Action (POA), and Visual Analytics</span>
+    </div>
+    <div class="header-btns">
+      <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀️ Light Mode</button>
+      <button onclick="openModalForNew()" class="btn-green">+ Add New Task</button>
+      <button class="secondary" onclick="exportCSV()">Export to Excel (CSV)</button>
+    </div>
+  </header>
+
+  <div class="toolbar-container">
+    <div class="toolbar-row">
+      <div class="view-pills">
+        <button class="view-btn active" id="btn-kanban" onclick="switchView('kanban')">📋 Kanban Board</button>
+        <button class="view-btn" id="btn-table" onclick="switchView('table')">📑 Tabular (Row-Wise)</button>
+        <button class="view-btn" id="btn-group-owner" onclick="switchView('group-owner')">👤 Group by Owner</button>
+        <button class="view-btn" id="btn-group-cat" onclick="switchView('group-cat')">📂 Group by Category</button>
+        <button class="view-btn" id="btn-reports" onclick="switchView('reports')">📊 Analytics & Reports</button>
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;" id="taskCountSummary"></div>
+    </div>
+
+    <div class="filter-controls" id="filterBar">
+      <input type="text" id="search" placeholder="Search title, POA, comments..." oninput="render()" style="flex: 2; min-width: 200px;">
+      <select id="filterOwner" onchange="render()" style="flex: 1; min-width: 120px;">
+        <option value="">All Owners</option>
+        <option value="Swetank">Swetank</option>
+        <option value="Ruchi">Ruchi</option>
+        <option value="Shresthank">Shresthank</option>
+        <option value="Ivanka">Ivanka</option>
+        <option value="General">General / Shared</option>
+      </select>
+      <select id="filterCategory" onchange="render()" style="flex: 1; min-width: 120px;">
+        <option value="">All Categories</option>
+        <option value="Bank">Bank</option>
+        <option value="Investment">Investment</option>
+        <option value="EPF">EPF</option>
+        <option value="Income tax">Income Tax</option>
+        <option value="Health">Health</option>
+        <option value="Property">Property</option>
+        <option value="Buy">Buy</option>
+        <option value="Education">Education</option>
+        <option value="Travel">Travel</option>
+        <option value="Misc">Misc</option>
+      </select>
+      <select id="filterPriority" onchange="render()" style="flex: 1; min-width: 120px;">
+        <option value="">All Priorities</option>
+        <option value="High">High Priority</option>
+        <option value="Medium">Medium Priority</option>
+        <option value="Low">Low Priority</option>
+      </select>
+      <select id="filterTag" onchange="render()" style="flex: 1; min-width: 120px;">
+        <option value="">All Locations / Tags</option>
+        <option value="India Trip">India Trip</option>
+        <option value="US">US</option>
+      </select>
+      <label class="toggle-completed-label">
+        <input type="checkbox" id="showCompletedCheck" onchange="render()" checked>
+        Show Completed Tasks
+      </label>
+    </div>
+  </div>
+
+  <main id="mainContent"></main>
+
+  <div class="modal-backdrop" id="modal">
+    <div class="modal">
+      <h2 id="modalHeading">Add Task</h2>
+      <input type="hidden" id="editTaskId">
+      <div class="form-group">
+        <label>Task Title / Description *</label>
+        <input type="text" id="taskTitle" placeholder="e.g. Complete wardrobe dimensions">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category / Type</label>
+          <select id="taskCat">
+            <option value="Bank">Bank</option>
+            <option value="Investment">Investment</option>
+            <option value="EPF">EPF</option>
+            <option value="Income tax">Income Tax</option>
+            <option value="Health">Health</option>
+            <option value="Property">Property</option>
+            <option value="Buy">Buy</option>
+            <option value="Education">Education</option>
+            <option value="Travel">Travel</option>
+            <option value="General">General</option>
+            <option value="Misc">Misc</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Owner / Assigned To</label>
+          <select id="taskOwner">
+            <option value="Swetank">Swetank</option>
+            <option value="Ruchi">Ruchi</option>
+            <option value="Shresthank">Shresthank</option>
+            <option value="Ivanka">Ivanka</option>
+            <option value="General">General / Shared</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Status</label>
+          <select id="taskStatus">
+            <option value="To Do">To Do</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Recheck">Recheck</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="taskPriority">
+            <option value="High">High</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Target ETA / Deadline</label>
+        <input type="date" id="taskETA">
+      </div>
+      <div class="form-group">
+        <label>Plan of Action (POA) / Immediate Next Steps</label>
+        <textarea id="taskPOA" rows="2" placeholder="e.g. Call branch manager, submit passport copy"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Comments / Updates / Tag (e.g. India Trip)</label>
+        <textarea id="taskComment" rows="2" placeholder="Reference numbers, emails, context notes..."></textarea>
+      </div>
+      <div class="modal-btns">
+        <button class="secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn-green" onclick="saveTaskModal()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const initialSeed = [{"id": 1, "t": "Income tax filing 2022 India", "cat": "Income tax", "o": "Ruchi", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 2, "t": "Income tax filing 2022 India", "cat": "Income tax", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 3, "t": "Joint Income tax filing in US for 2022", "cat": "Income tax", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 4, "t": "Follow up with IRS for Refund", "cat": "Income tax", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 5, "t": "Follow up with Income tax India for refund. Greviance id - 2873978", "cat": "Income tax", "o": "Swetank", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": "communication@cpc.incometax.gov.in"}, {"id": 6, "t": "Spects", "cat": "Health", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 7, "t": "Skin Dr appointment", "cat": "Health", "o": "Ruchi", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 8, "t": "Blood test", "cat": "Health", "o": "Shresthank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 9, "t": "Stool test", "cat": "Health", "o": "Shresthank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 10, "t": "UAN Phone number to be updated", "cat": "EPF", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "updated to 9415412782"}, {"id": 11, "t": "ICICI Pru life closure", "cat": "Investment", "o": "Ruchi", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 12, "t": "PPF account withdrawal", "cat": "Investment", "o": "Ruchi", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip"}, {"id": 13, "t": "Sell All MF's in Sharekhan", "cat": "Investment", "o": "Swetank", "p": "High", "eta": "", "poa": "", "s": "In Progress", "c": "only 1 left , locked for 3 years"}, {"id": 14, "t": "Move money from Kotak to Citi", "cat": "Investment", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 15, "t": "Sell all sharekhan shares", "cat": "Investment", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 16, "t": "Mail to be sent to Poland EPF at email cot@zus.pl", "cat": "EPF", "o": "Swetank", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 17, "t": "Mail to be sent to Wipro for PF withdrawal", "cat": "EPF", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "KN/BN/11394/12502, they have sent it to SAP? on Cheque date: 06/10/2006\n\nCheque no: 610042\n\nAmount: 77,942/-"}, {"id": 18, "t": "Mail to be sent to HP for PF withdrawal", "cat": "EPF", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 19, "t": "Mail to be sent to SAP for PF withdrawal - KN/23423/000861\n ( UAN - 100429412023)", "cat": "EPF", "o": "Swetank", "p": "High", "eta": "", "poa": "", "s": "Recheck", "c": "PYKRP00234230000000861"}, {"id": 20, "t": "Mail to be sent to SAP for PF withdrawal - KN/23423/002672", "cat": "EPF", "o": "Ruchi", "p": "High", "eta": "", "poa": "", "s": "Recheck", "c": "PYKRP00234230000002672"}, {"id": 21, "t": "Close SBI Account - Shresthank", "cat": "Bank", "o": "Shresthank", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": "India Trip"}, {"id": 22, "t": "Transfer old HDD data to new HDD", "cat": "Misc", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip"}, {"id": 23, "t": "Bring both property papers to US", "cat": "Misc", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip"}, {"id": 24, "t": "Posession & Khata Transfer India", "cat": "Property", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip"}, {"id": 25, "t": "Move all stuff in one room in Pushpalok", "cat": "Property", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip"}, {"id": 26, "t": "Update Aadhar card phone numbers", "cat": "Aadhar", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip"}, {"id": 27, "t": "Update Aadhar card phone numbers", "cat": "Aadhar", "o": "Ruchi", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip"}, {"id": 28, "t": "Update Aadhar card phone numbers", "cat": "Aadhar", "o": "Shresthank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip"}, {"id": 29, "t": "Check Locker in IOB & activate account", "cat": "Bank", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip"}, {"id": 30, "t": "Update address of Ruchi's Axis account", "cat": "Bank", "o": "Ruchi", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": "India Trip"}, {"id": 31, "t": "Sell Bicycle or bring", "cat": "Misc", "o": "Shresthank", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": "India Trip"}, {"id": 32, "t": "Update all bank details of Mom & Dad", "cat": "Bank", "o": "Swetank", "p": "High", "eta": "", "poa": "", "s": "In Progress", "c": "India Trip"}, {"id": 33, "t": "Surrender AegonReligare policy", "cat": "Investment", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Cancelled", "c": "India Trip or US"}, {"id": 34, "t": "Surrender TATA AIA Policy", "cat": "Investment", "o": "Ruchi", "p": "Low", "eta": "", "poa": "", "s": "Duplicate", "c": "India Trip or US"}, {"id": 35, "t": "Update KYC/PAN/Email/Phone/Address in HDFC mutual fund", "cat": "Investment", "o": "Ruchi", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": "India Trip or US"}, {"id": 36, "t": "Setup a transfer of money to US through WesterUnion", "cat": "Bank", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Cancelled", "c": "India Trip"}, {"id": 37, "t": "Activate Kotak Account", "cat": "Bank", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip"}, {"id": 38, "t": "Redeem Infra bonds", "cat": "Investment", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 39, "t": "Redeem Infra bonds", "cat": "Investment", "o": "Ruchi", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 40, "t": "Capgemini Gratuity Pay out", "cat": "Investment", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 41, "t": "Buy Lawn Mower", "cat": "Buy", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 42, "t": "Buy Sofa Set", "cat": "Buy", "o": "Ruchi", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 43, "t": "Buy Dining Table", "cat": "Buy", "o": "Ruchi", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 44, "t": "Buy Security Camera", "cat": "Buy", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 45, "t": "Buy Security Alarm system", "cat": "Buy", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 46, "t": "Check Roundpoint Mortgage and update sheet", "cat": "Investment", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 47, "t": "Follow up with FirstAmerican to ask about amount with them", "cat": "Investment", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 48, "t": "Betu's school Admission followup", "cat": "Education", "o": "Shresthank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "documents Submitted"}, {"id": 49, "t": "Ivanka Day Care Admission", "cat": "Education", "o": "Ivanka", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 50, "t": "Ivanka Tongue Treatment", "cat": "Health", "o": "Ivanka", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 51, "t": "Betu's Teeth Braces", "cat": "Health", "o": "Shresthank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip or US"}, {"id": 52, "t": "Internet connection in India", "cat": "Misc", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip or US"}, {"id": 53, "t": "Fill up Travel declaration form for India travel", "cat": "Travel", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "https://www.kayak.com/travel-restrictions/india"}, {"id": 54, "t": "Prepare GPA for Godrej Possession", "cat": "Investment", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip or US"}, {"id": 55, "t": "Flight tickets for Bangalore", "cat": "Travel", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 56, "t": "Transfer Phone to corporate ServiceNow", "cat": "Misc", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 57, "t": "Call ESOP CG team to check balance", "cat": "Investment", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "esop.nar@capgemini.com"}, {"id": 58, "t": "Activate my PPF account in bangalore", "cat": "Investment", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "India Trip"}, {"id": 59, "t": "Refinance loan for godrej", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Cancelled", "c": ""}, {"id": 60, "t": "Order material for frontyard", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 61, "t": "complete front yard", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 62, "t": "Epoxy in garage", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 63, "t": "room in garage", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 64, "t": "transfer money from Axis to Kotak , and from Kotak to BOA", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 65, "t": "get affidavit from khan", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 66, "t": "talk to khan for painting", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 67, "t": "talk to Reddy for grill door", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 68, "t": "transfer fee to CA", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 69, "t": "update Sunroom design", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 70, "t": "apply for Sunroom Permits", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 71, "t": "markings for wardrobe to be done", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 72, "t": "Update file for June & July monthly expenditure", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 73, "t": "Invest in Shares in Sharekhan", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 74, "t": "FD in IOB - 3lakh", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 75, "t": "check if FD created for Shresthank in SBI", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 76, "t": "fill out school forms for Ivanka & Shresthank", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 77, "t": "talk to attorney for will & trust creation", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 78, "t": "request for Llama tropy", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 79, "t": "Concur - raise expense for hyderabad trip", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 80, "t": "follow up with Makemytrip for refund", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 81, "t": "Check message from Pushpalok & resove issues related to Dues", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 82, "t": "Invest in MF SIPS in Sharekhan", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 83, "t": "Apply for Ruchi & Shrestank Passports", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 84, "t": "Check for sliding doors in Home Depot", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 85, "t": "Complete Wardrobe", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": "US"}, {"id": 86, "t": "Pay DMV registration", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 87, "t": "follow up with CA for refund resolution (India Income tax) for 2024", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 88, "t": "Check for Solar with Tesla", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 89, "t": "check for gas pipeline for cooking", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": "US"}, {"id": 90, "t": "Check what to be done for Tata AIA account (Ruchi)", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": "India Trip"}, {"id": 91, "t": "Check for Epoxy shining material (test)", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "US"}, {"id": 92, "t": "Water softener & Under the sink water filter", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 93, "t": "Talk to Iron Birch for financial planning", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 94, "t": "Finalize No broker", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 95, "t": "Talk to navia benefits", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 96, "t": "Apply for Ruchi passport", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 97, "t": "Property tax for Godrej", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 98, "t": "Settle Xfinity Ruchi mobile", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 99, "t": "Backyard cleaning", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 100, "t": "Carpet buying & replace", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 101, "t": "check bi-fold door for my Closet", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 102, "t": "finalize rental agreement for Godrej Aqua", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 103, "t": "invest $20k in Ameriprise", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 104, "t": "Check ETF - from. Kapeel", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 105, "t": "Deep Cleaning of house", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 106, "t": "Order Water Softener & RO unit from Amazon", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 107, "t": "Buy Planters for frontyard", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 108, "t": "Buy white stone for frontyard", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 109, "t": "Solar pillar lights for frontyard", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 110, "t": "buy backup refrigerator", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 111, "t": "AC/Heater vent cleaning (filter changed)", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 112, "t": "Move Ameriprise under Trust", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 113, "t": "Move BOA under Trust", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 114, "t": "Move Fidelity Account under Trust", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 115, "t": "Receive update Sale deed from Anthoor lawyers", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 116, "t": "Ticket for India trip in June", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 117, "t": "US income tax filing", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 118, "t": "Renew Pushpalok Rental agreement", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 119, "t": "submit Daycare expenses by 31st march", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 120, "t": "Awaiting check from Fifth third bank", "cat": "General", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 121, "t": "Account settlement with nobroker & pay maintenance.", "cat": "General", "o": "Swetank", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 122, "t": "check car insurance premium amount---state farm", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 123, "t": "Review Ameriprise portfolio with Kyle & Bill", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 124, "t": "check bank detail update in Tata AIA", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 125, "t": "closure of Kotak account", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 126, "t": "closure of SBI - 2 account and consolidate FD's", "cat": "General", "o": "General", "p": "High", "eta": "", "poa": "", "s": "In Progress", "c": "one accoiunt closed now."}, {"id": 127, "t": "receive Ruchi's check book", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 128, "t": "activate HDFC and move funds out", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 129, "t": "close HDFC account", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 130, "t": "Mummy's death Certificate", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 131, "t": "Pay Jhansi House Tax & settlement", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 132, "t": "Succession papers", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 133, "t": "Update in Jhansi House tax ( Jhansi Nagar Nigam)", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 134, "t": "Nippon - process unclaimed amount & check all redemption (rediffmail) service request number is 80280860", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 134, "t": "Finalize the Certification you want to do", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 130, "t": "Apply for rebate on lawn to backyard conversion", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "Awating cheque"}, {"id": 131, "t": "Applied for funds withdrawal from EPF", "cat": "General", "o": "General", "p": "High", "eta": "", "poa": "", "s": "In Progress", "c": "Awaiting deposit"}, {"id": 132, "t": "new rental agrrement for Villa 28", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 133, "t": "Pending rent for villa 28 (March 2026 - 25K, April +May + June 2026) = 3*26500", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "104500"}, {"id": 134, "t": "Pending revised rent for Godrej - arears pending from May, June & July. 2026", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": "previous rent agreement was until April 2026."}, {"id": 135, "t": "Water bill for 3 months to be paid by Tenant in Godrej", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 136, "t": "awaiting for check from Calwater.", "cat": "General", "o": "General", "p": "Low", "eta": "", "poa": "", "s": "Completed", "c": ""}, {"id": 137, "t": "apply for check to LIC policy for Ruchi", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": "when land in India"}, {"id": 138, "t": "Get E-Katha - NoBroker Services", "cat": "General", "o": "General", "p": "High", "eta": "", "poa": "", "s": "In Progress", "c": ""}, {"id": 139, "t": "Pergola in backyard", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 140, "t": "Cover for Fireplace cylinder", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 141, "t": "Complete Foyer area", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 142, "t": "Speaker tuneup for home theatre", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 143, "t": "Check ICICI (SAP) Fund deposited in Ruchi's account or not (2025 & 2026) & Update bank details", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 144, "t": "Update Bank details for ICICI (SAP) Fund for annual payout", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 145, "t": "Income tax filing 2025-26 India - Swetank", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}, {"id": 146, "t": "Add Ruchi's name in PNB account and Locker.", "cat": "General", "o": "General", "p": "Medium", "eta": "", "poa": "", "s": "To Do", "c": ""}];
+
+    const STORAGE_KEY = "master_task_dashboard_v4";
+    const THEME_KEY = "master_task_theme";
+    const VIEW_KEY = "master_task_active_view";
+
+    let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || initialSeed;
+    let currentView = localStorage.getItem(VIEW_KEY) || "kanban";
+    const columns = ["To Do", "In Progress", "Recheck", "Completed"];
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem(THEME_KEY) || "dark";
+      if (savedTheme === "light") {
+        document.body.classList.add("light-theme");
+        document.getElementById("themeBtn").innerText = "🌙 Dark Mode";
+      } else {
+        document.body.classList.remove("light-theme");
+        document.getElementById("themeBtn").innerText = "☀️ Light Mode";
+      }
+    }
+
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle("light-theme");
+      localStorage.setItem(THEME_KEY, isLight ? "light" : "dark");
+      document.getElementById("themeBtn").innerText = isLight ? "🌙 Dark Mode" : "☀️ Light Mode";
+    }
+
+    function switchView(viewName) {
+      currentView = viewName;
+      localStorage.setItem(VIEW_KEY, viewName);
+      
+      document.querySelectorAll(".view-btn").forEach(btn => btn.classList.remove("active"));
+      const activeBtn = document.getElementById(`btn-${viewName}`);
+      if (activeBtn) activeBtn.classList.add("active");
+      
+      const filterBar = document.getElementById("filterBar");
+      if (viewName === "reports") {
+        filterBar.style.display = "none";
+      } else {
+        filterBar.style.display = "flex";
+      }
+
+      render();
+    }
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      render();
+    }
+
+    function getFilteredTasks() {
+      const q = document.getElementById("search").value.toLowerCase();
+      const owner = document.getElementById("filterOwner").value;
+      const category = document.getElementById("filterCategory").value;
+      const prio = document.getElementById("filterPriority").value;
+      const tag = document.getElementById("filterTag").value;
+      const showCompleted = document.getElementById("showCompletedCheck").checked;
+
+      return tasks.filter(t => {
+        if (!showCompleted && t.s === "Completed") return false;
+
+        const matchQ = (t.t || "").toLowerCase().includes(q) || 
+                       (t.c || "").toLowerCase().includes(q) || 
+                       (t.poa || "").toLowerCase().includes(q);
+        const matchOwner = !owner || t.o === owner;
+        const matchCategory = !category || t.cat === category;
+        const matchPrio = !prio || t.p === prio;
+        const matchTag = !tag || (t.c && t.c.toLowerCase().includes(tag.toLowerCase()));
+        return matchQ && matchOwner && matchCategory && matchPrio && matchTag;
+      });
+    }
+
+    function render() {
+      const container = document.getElementById("mainContent");
+
+      if (currentView === "reports") {
+        document.getElementById("taskCountSummary").innerText = `Total Records: ${tasks.length}`;
+        renderReports(container);
+        return;
+      }
+
+      const filtered = getFilteredTasks();
+      document.getElementById("taskCountSummary").innerText = `Showing ${filtered.length} of ${tasks.length} total tasks`;
+
+      if (currentView === "kanban") {
+        renderKanban(filtered, container);
+      } else if (currentView === "table") {
+        renderTable(filtered, container);
+      } else if (currentView === "group-owner") {
+        renderGrouped(filtered, container, "o", "Owner");
+      } else if (currentView === "group-cat") {
+        renderGrouped(filtered, container, "cat", "Category");
+      }
+    }
+
+    function renderKanban(filteredList, container) {
+      let html = `<div class="board-kanban">`;
+      columns.forEach(col => {
+        const colTasks = filteredList.filter(t => t.s === col);
+        html += `
+          <div class="col">
+            <div class="col-header">
+              <span>${col}</span>
+              <span class="badge-count">${colTasks.length}</span>
+            </div>
+            <button class="col-add-btn" onclick="openModalForNew('${col}')">+ Add to ${col}</button>
+        `;
+        colTasks.forEach(item => {
+          html += createCardHtml(item);
+        });
+        html += `</div>`;
+      });
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    function createCardHtml(item) {
+      const isTrip = item.c && item.c.toLowerCase().includes("india");
+      const prioClass = item.p === 'High' ? 'badge-prio-high' : (item.p === 'Medium' ? 'badge-prio-med' : 'badge-prio-low');
+      const isDone = item.s === "Completed";
+      
+      let isOverdue = false;
+      if (item.eta && !isDone) {
+        const todayStr = new Date().toISOString().slice(0, 10);
+        if (item.eta < todayStr) isOverdue = true;
+      }
+
+      return `
+        <div class="card ${isDone ? 'is-completed' : ''}">
+          <div class="card-top">
+            <span class="card-id">#${item.id}</span>
+            <span class="badge ${prioClass}">${item.p || 'Medium'}</span>
+          </div>
+          <div class="card-title" style="${isDone ? 'text-decoration: line-through; opacity: 0.8;' : ''}">${item.t}</div>
+          
+          <div class="badges">
+            <span class="badge badge-cat">${item.cat}</span>
+            <span class="badge badge-owner">${item.o}</span>
+            ${item.eta ? `<span class="badge ${isOverdue ? 'badge-overdue' : 'badge-eta'}">${isOverdue ? '⚠️ OVERDUE: ' : 'ETA: '}${item.eta}</span>` : ''}
+            ${isTrip ? '<span class="badge badge-trip">India Trip</span>' : ''}
+            ${isDone ? '<span class="badge badge-status">Completed</span>' : ''}
+          </div>
+
+          ${item.poa ? `
+            <div class="poa-box">
+              <div class="poa-title">Plan of Action:</div>
+              <div>${item.poa}</div>
+            </div>` : ''}
+
+          ${item.c ? `<div class="card-comment">${item.c}</div>` : ''}
+
+          <div class="card-actions">
+            <select onchange="quickMove(${item.id}, this.value)">
+              ${columns.map(c => `<option value="${c}" ${c === item.s ? 'selected' : ''}>${c}</option>`).join('')}
+              ${item.s === 'Cancelled' ? '<option value="Cancelled" selected>Cancelled</option>' : '<option value="Cancelled">Cancelled</option>'}
+            </select>
+            <button class="btn-edit" onclick="openModalForEdit(${item.id})">Edit</button>
+            <button class="btn-del" onclick="deleteTask(${item.id})">Del</button>
+          </div>
+        </div>`;
+    }
+
+    function renderTable(filteredList, container) {
+      let html = `
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 45px;">#</th>
+                <th style="width: 28%;">Task Description</th>
+                <th>Category</th>
+                <th>Owner</th>
+                <th>Priority</th>
+                <th>ETA</th>
+                <th style="width: 22%;">Plan of Action & Comments</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      if (filteredList.length === 0) {
+        html += `<tr><td colspan="9" style="text-align:center; padding: 30px; color: var(--text-muted);">No matching tasks found.</td></tr>`;
+      }
+
+      filteredList.forEach(t => {
+        const prioClass = t.p === 'High' ? 'badge-prio-high' : (t.p === 'Medium' ? 'badge-prio-med' : 'badge-prio-low');
+        const isTrip = t.c && t.c.toLowerCase().includes("india");
+        const isDone = t.s === "Completed";
+
+        let isOverdue = false;
+        if (t.eta && !isDone) {
+          const todayStr = new Date().toISOString().slice(0, 10);
+          if (t.eta < todayStr) isOverdue = true;
+        }
+
+        html += `
+          <tr class="${isDone ? 'is-row-completed' : ''}">
+            <td style="font-weight: 700; color: var(--text-muted);">${t.id}</td>
+            <td>
+              <div style="font-weight: 600; color: var(--text); ${isDone ? 'text-decoration: line-through;' : ''}">${t.t}</div>
+              ${isTrip ? `<span class="badge badge-trip" style="margin-top: 4px; display:inline-block;">India Trip</span>` : ''}
+            </td>
+            <td><span class="badge badge-cat">${t.cat}</span></td>
+            <td><span class="badge badge-owner">${t.o}</span></td>
+            <td><span class="badge ${prioClass}">${t.p || 'Medium'}</span></td>
+            <td style="white-space: nowrap; font-size: 12px;">
+              ${t.eta ? `<span class="badge ${isOverdue ? 'badge-overdue' : 'badge-eta'}">${t.eta}</span>` : '<span style="color:var(--text-muted);">-</span>'}
+            </td>
+            <td>
+              ${t.poa ? `<div style="font-size: 12px; color: #0284c7; margin-bottom: 4px;"><strong>POA:</strong> ${t.poa}</div>` : ''}
+              ${t.c ? `<div style="font-size: 11px; color: var(--text-muted);">${t.c}</div>` : ''}
+            </td>
+            <td>
+              <select onchange="quickMove(${t.id}, this.value)" style="padding: 4px 6px; font-size: 11px;">
+                ${columns.map(c => `<option value="${c}" ${c === t.s ? 'selected' : ''}>${c}</option>`).join('')}
+                ${t.s === 'Cancelled' ? '<option value="Cancelled" selected>Cancelled</option>' : '<option value="Cancelled">Cancelled</option>'}
+              </select>
+            </td>
+            <td style="text-align: right; white-space: nowrap;">
+              <button class="btn-edit" onclick="openModalForEdit(${t.id})">Edit</button>
+              <button class="btn-del" onclick="deleteTask(${t.id})">Del</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table></div>`;
+      container.innerHTML = html;
+    }
+
+    function renderGrouped(filteredList, container, groupKey, groupLabel) {
+      const groups = {};
+      filteredList.forEach(t => {
+        const key = t[groupKey] || "General";
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(t);
+      });
+
+      let html = "";
+      Object.keys(groups).sort().forEach(groupName => {
+        const groupTasks = groups[groupName];
+        html += `
+          <div class="group-section">
+            <div class="group-header">
+              <span>${groupLabel}: <strong>${groupName}</strong></span>
+              <span class="badge-count">${groupTasks.length} Tasks</span>
+            </div>
+            <div style="padding: 14px;">
+              <div class="board-kanban" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+        `;
+        groupTasks.forEach(task => {
+          html += createCardHtml(task);
+        });
+        html += `</div></div></div>`;
+      });
+
+      if (Object.keys(groups).length === 0) {
+        html = `<div style="text-align: center; padding: 40px; color: var(--text-muted);">No tasks match the filter criteria.</div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function renderReports(container) {
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.s === 'Completed').length;
+      const inProgress = tasks.filter(t => t.s === 'In Progress').length;
+      const recheck = tasks.filter(t => t.s === 'Recheck').length;
+      const todo = tasks.filter(t => t.s === 'To Do').length;
+      const cancelled = tasks.filter(t => t.s === 'Cancelled').length;
+      const activeTotal = total - completed - cancelled;
+      const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      const today = new Date().toISOString().slice(0, 10);
+      const overdueTasks = tasks.filter(t => t.eta && t.eta < today && t.s !== 'Completed' && t.s !== 'Cancelled');
+      
+      const ownerCounts = {};
+      tasks.forEach(t => {
+        const o = t.o || "General";
+        if (!ownerCounts[o]) ownerCounts[o] = { total: 0, completed: 0, pending: 0 };
+        ownerCounts[o].total++;
+        if (t.s === 'Completed') ownerCounts[o].completed++;
+        else ownerCounts[o].pending++;
+      });
+
+      const catCounts = {};
+      tasks.forEach(t => {
+        const c = t.cat || "General";
+        if (!catCounts[c]) catCounts[c] = { total: 0, completed: 0, pending: 0 };
+        catCounts[c].total++;
+        if (t.s === 'Completed') catCounts[c].completed++;
+        else catCounts[c].pending++;
+      });
+
+      let html = `
+        <div class="reports-grid">
+          <div class="stat-card" style="border-top: 4px solid #10b981;">
+            <div class="stat-title">Overall Completion Rate</div>
+            <div class="stat-num" style="color: #10b981;">${completionRate}%</div>
+            <div class="stat-sub">${completed} of ${total} total tasks completed</div>
+          </div>
+          <div class="stat-card" style="border-top: 4px solid #3b82f6;">
+            <div class="stat-title">Active Workload</div>
+            <div class="stat-num" style="color: #3b82f6;">${activeTotal}</div>
+            <div class="stat-sub">${inProgress} in progress • ${recheck} recheck • ${todo} to do</div>
+          </div>
+          <div class="stat-card" style="border-top: 4px solid #ef4444;">
+            <div class="stat-title">Delayed / Overdue Tasks</div>
+            <div class="stat-num" style="color: #ef4444;">${overdueTasks.length}</div>
+            <div class="stat-sub">${overdueTasks.length > 0 ? 'Action required on pending deadlines' : 'No overdue deadlines currently'}</div>
+          </div>
+          <div class="stat-card" style="border-top: 4px solid #f59e0b;">
+            <div class="stat-title">India Trip Scope</div>
+            <div class="stat-num" style="color: #f59e0b;">${tasks.filter(t => (t.c||'').toLowerCase().includes('india')).length}</div>
+            <div class="stat-sub">${tasks.filter(t => (t.c||'').toLowerCase().includes('india') && t.s !== 'Completed').length} tasks pending for India</div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-title">
+            <span>Overall Execution Progress</span>
+            <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">${completed} / ${total} Tasks (${completionRate}%)</span>
+          </div>
+          <div style="height: 24px; background: var(--progress-bg); border-radius: 12px; overflow: hidden; display: flex;">
+            <div style="width: ${completionRate}%; background: #10b981; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff;">
+              ${completionRate > 8 ? completionRate + '%' : ''}
+            </div>
+            <div style="width: ${(inProgress/total)*100}%; background: #3b82f6;" title="In Progress"></div>
+            <div style="width: ${(recheck/total)*100}%; background: #f59e0b;" title="Recheck"></div>
+            <div style="width: ${(todo/total)*100}%; background: #64748b;" title="To Do"></div>
+          </div>
+          <div style="display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap;">
+            <span><span style="color:#10b981; font-weight:bold;">●</span> Completed: ${completed}</span>
+            <span><span style="color:#3b82f6; font-weight:bold;">●</span> In Progress: ${inProgress}</span>
+            <span><span style="color:#f59e0b; font-weight:bold;">●</span> Recheck: ${recheck}</span>
+            <span><span style="color:#64748b; font-weight:bold;">●</span> To Do: ${todo}</span>
+            <span><span style="color:#ef4444; font-weight:bold;">●</span> Cancelled: ${cancelled}</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px;">
+          <div class="chart-card">
+            <div class="chart-title">Tasks by Owner (Completed vs Pending)</div>
+            ${Object.keys(ownerCounts).sort().map(owner => {
+              const data = ownerCounts[owner];
+              const compPct = Math.round((data.completed / data.total) * 100);
+              const pendPct = 100 - compPct;
+              return `
+                <div class="bar-row">
+                  <div class="bar-label">${owner}</div>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: ${compPct}\%; background: #10b981;" title="Completed: ${data.completed}"></div>
+                    <div class="bar-fill" style="width: ${pendPct}\%; background: #3b82f6;" title="Pending: ${data.pending}"></div>
+                  </div>
+                  <div class="bar-val">${data.pending} open / ${data.total}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-title">Tasks by Category</div>
+            ${Object.keys(catCounts).sort((a,b) => catCounts[b].total - catCounts[a].total).map(cat => {
+              const data = catCounts[cat];
+              const pct = Math.round((data.total / total) * 100);
+              return `
+                <div class="bar-row">
+                  <div class="bar-label">${cat}</div>
+                  <div class="bar-track">
+                    <div class="bar-fill" style="width: ${(data.completed/data.total)*100}\%; background: #10b981;" title="Completed: ${data.completed}"></div>
+                    <div class="bar-fill" style="width: ${(data.pending/data.total)*100}\%; background: #f59e0b;" title="Pending: ${data.pending}"></div>
+                  </div>
+                  <div class="bar-val">${data.pending} open / ${data.total}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        ${overdueTasks.length > 0 ? `
+          <div class="chart-card" style="border-left: 4px solid #ef4444;">
+            <div class="chart-title" style="color: #ef4444;">⚠️ Delayed / Overdue Action Items</div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Task</th>
+                    <th>Owner</th>
+                    <th>ETA</th>
+                    <th>Status</th>
+                    <th>POA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${overdueTasks.map(ot => `
+                    <tr>
+                      <td><strong>#${ot.id}</strong></td>
+                      <td>${ot.t}</td>
+                      <td>${ot.o}</td>
+                      <td><span class="badge badge-overdue">${ot.eta}</span></td>
+                      <td>${ot.s}</td>
+                      <td style="color:#0284c7;">${ot.poa || '-'}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ` : ''}
+      `;
+      container.innerHTML = html;
+    }
+
+    function quickMove(id, newStatus) {
+      const item = tasks.find(t => t.id === id);
+      if (item) { item.s = newStatus; persist(); }
+    }
+
+    function openModalForNew(defaultCol = "To Do") {
+      document.getElementById('modalHeading').innerText = "Add New Task";
+      document.getElementById('editTaskId').value = "";
+      document.getElementById('taskTitle').value = "";
+      document.getElementById('taskCat').value = "General";
+      document.getElementById('taskOwner').value = "Swetank";
+      document.getElementById('taskStatus').value = defaultCol;
+      document.getElementById('taskPriority').value = "Medium";
+      document.getElementById('taskETA').value = "";
+      document.getElementById('taskPOA').value = "";
+      document.getElementById('taskComment').value = "";
+      document.getElementById('modal').style.display = "flex";
+      document.getElementById('taskTitle').focus();
+    }
+
+    function openModalForEdit(id) {
+      const item = tasks.find(t => t.id === id);
+      if (!item) return;
+      document.getElementById('modalHeading').innerText = "Edit Task #" + id;
+      document.getElementById('editTaskId').value = item.id;
+      document.getElementById('taskTitle').value = item.t;
+      document.getElementById('taskCat').value = item.cat || "General";
+      document.getElementById('taskOwner').value = item.o || "Swetank";
+      document.getElementById('taskStatus').value = item.s || "To Do";
+      document.getElementById('taskPriority').value = item.p || "Medium";
+      document.getElementById('taskETA').value = item.eta || "";
+      document.getElementById('taskPOA').value = item.poa || "";
+      document.getElementById('taskComment').value = item.c || "";
+      document.getElementById('modal').style.display = "flex";
+    }
+
+    function closeModal() { document.getElementById('modal').style.display = "none"; }
+
+    function saveTaskModal() {
+      const idStr = document.getElementById('editTaskId').value;
+      const title = document.getElementById('taskTitle').value.trim();
+      if (!title) { alert("Please enter a task title!"); return; }
+
+      if (idStr) {
+        const id = parseInt(idStr, 10);
+        const item = tasks.find(t => t.id === id);
+        if (item) {
+          item.t = title;
+          item.cat = document.getElementById('taskCat').value;
+          item.o = document.getElementById('taskOwner').value;
+          item.s = document.getElementById('taskStatus').value;
+          item.p = document.getElementById('taskPriority').value;
+          item.eta = document.getElementById('taskETA').value;
+          item.poa = document.getElementById('taskPOA').value.trim();
+          item.c = document.getElementById('taskComment').value.trim();
+        }
+      } else {
+        const nextId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1;
+        tasks.push({
+          id: nextId,
+          t: title,
+          cat: document.getElementById('taskCat').value,
+          o: document.getElementById('taskOwner').value,
+          s: document.getElementById('taskStatus').value,
+          p: document.getElementById('taskPriority').value,
+          eta: document.getElementById('taskETA').value,
+          poa: document.getElementById('taskPOA').value.trim(),
+          c: document.getElementById('taskComment').value.trim()
+        });
+      }
+      closeModal();
+      persist();
+    }
+
+    function deleteTask(id) {
+      if (confirm(`Delete task #${id}?`)) {
+        tasks = tasks.filter(t => t.id !== id);
+        persist();
+      }
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(tasks, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Tasks_Full_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+    }
+
+    function triggerImport() { document.getElementById('fileInput').click(); }
+
+    function importJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const loaded = JSON.parse(evt.target.result);
+          if (Array.isArray(loaded)) {
+            tasks = loaded;
+            persist();
+            alert("Backup successfully restored!");
+          }
+        } catch (err) { alert("Invalid backup file format."); }
+      };
+      reader.readAsText(file);
+    }
+
+    function exportCSV() {
+      let csv = "ID,Task,Category,Owner,Priority,ETA,POA / Execution Steps,Status,Comments\n";
+      tasks.forEach(t => {
+        csv += `"${t.id}","${(t.t||'').replace(/"/g, '""')}","${t.cat||''}","${t.o||''}","${t.p||''}","${t.eta||''}","${(t.poa||'').replace(/"/g, '""')}","${t.s||''}","${(t.c||'').replace(/"/g, '""')}"\n`;
+      });
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Master_Tasks_All_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+    }
+
+    initTheme();
+    switchView(currentView);
+  </script>
+</body>
+</html>
